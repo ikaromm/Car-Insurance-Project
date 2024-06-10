@@ -6,11 +6,12 @@ import seaborn as sns
 import warnings
 
 warnings.filterwarnings("ignore")
-from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import FunctionTransformer
 from sklearn import metrics
-from sklearn import pipeline
 from sklearn import ensemble
 from sklearn import model_selection
+from sklearn.pipeline import Pipeline
+from utils import funcs
 
 # %%
 train = pd.read_csv("train.csv")
@@ -20,28 +21,29 @@ train.isna().sum()
 # %%
 numeric_columns_train = train.select_dtypes(include=["float64", "int64"])
 
-plt.figure(figsize=(20, 15))
+# plt.figure(figsize=(20, 15))
 
-for i, column in enumerate(numeric_columns_train.columns):
-    plt.subplot(5, 4, i + 1)
-    sns.histplot(train[column], kde=False)
-    plt.title(column)
-    plt.tight_layout()
 
-plt.show()
+# for i, column in enumerate(numeric_columns_train.columns):
+#     plt.subplot(5, 4, i + 1)
+#     sns.histplot(train[column], kde=False)
+#     plt.title(column)
+#     plt.tight_layout()
+
+# plt.show()
 
 # %%
-plt.figure(figsize=(20, 15))
+# plt.figure(figsize=(20, 15))
 
-# Iterar sobre as colunas numéricas
-for i, column in enumerate(numeric_columns_train.columns):
-    plt.subplot(5, 4, i + 1)
-    sns.violinplot(x="is_claim", y=column, data=train)
-    plt.title(column)
-    plt.tight_layout()
+# # Iterar sobre as colunas numéricas
+# for i, column in enumerate(numeric_columns_train.columns):
+#     plt.subplot(5, 4, i + 1)
+#     sns.violinplot(x="is_claim", y=column, data=train)
+#     plt.title(column)
+#     plt.tight_layout()
 
-# Exibir o gráfico
-plt.show()
+# # Exibir o gráfico
+# plt.show()
 # %%
 ### Chart by Zubin Relia (From Kaggle)
 
@@ -70,10 +72,10 @@ for i, column in enumerate(cols_1):
     ax.tick_params(axis="x", rotation=90)
 
 
-plt.tight_layout()
+# plt.tight_layout()
 
 
-plt.show()
+# plt.show()
 # %%
 train.shape
 
@@ -83,10 +85,6 @@ heat = train[cols_1]
 plt.figure(figsize=(25, 25))
 sns.heatmap(numeric_columns_train.corr(), annot=True, fmt=".2f", cmap="coolwarm")
 plt.show()
-
-
-# %%
-train.dtypes
 
 # Index(['policy_id', 'policy_tenure', 'age_of_car', 'age_of_policyholder',
 #    'area_cluster', 'population_density', 'make', 'segment', 'model',
@@ -102,24 +100,24 @@ train.dtypes
 #    'is_ecw', 'is_speed_alert', 'ncap_rating', 'is_claim'],
 #   dtype='object')
 # %%
-from funcs import Funcs
 
-func = Funcs()
+# funcs.group_less_2pct(train)
 
 # %%
-# train['segment'].value_counts()
+funcs.reduce_mem_usage(train)
 
-func.group_less_2pct(train, "model")
 
-train["model"].value_counts()
+
 # %%
+drop_policy_id_transformer = FunctionTransformer(funcs.drop_policy_id)
 
-pipe = pipeline.Pipeline([
-    ('MemSaver', func.reduce_mem_usage(train)),    
+pipeline = Pipeline(steps=[
+    ('drop_policy_id', drop_policy_id_transformer),
+    # Add other transformers here (e.g., scaling, encoding) if needed
 ])
 
+# pipeline.fit(train)
 
-# %%
+# train_transformed = pipeline.transform(train)
 
-func.reduce_mem_usage(train)
 # %%
